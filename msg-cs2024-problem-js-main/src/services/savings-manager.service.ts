@@ -16,10 +16,24 @@ export class SavingsManagerService {
     savingAccounts.forEach(savingAccount => {
       if (savingAccount.interestFrequency === CapitalizationFrequency.MONTHLY) {
         this.addMonthlyInterest(savingAccount, nextSystemDate);
+      } else if (savingAccount.interestFrequency === CapitalizationFrequency.QUARTERLY) {
+        this.addQuarterInterest(savingAccount, nextSystemDate)
       }
     });
 
     this.systemDate = nextSystemDate.toDate();
+  }
+
+  private addQuarterInterest(savingAccount: SavingsAccountModel, currentInterestMonth: dayjs.Dayjs): void {
+    const nextInterestDateForAccount = dayjs(savingAccount.lastInterestAppliedDate).add(3, 'months');
+
+    const sameMonth = currentInterestMonth.isSame(nextInterestDateForAccount, 'month');
+    const sameYear = currentInterestMonth.isSame(nextInterestDateForAccount, 'year');
+
+    if(sameMonth && sameYear) {
+      this.addInterest(savingAccount);
+      savingAccount.lastInterestAppliedDate = currentInterestMonth.toDate();
+    }
   }
 
   private addMonthlyInterest(savingAccount: SavingsAccountModel, currentInterestMonth: dayjs.Dayjs): void {
