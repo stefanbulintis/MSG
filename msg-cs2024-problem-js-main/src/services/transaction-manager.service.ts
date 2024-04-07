@@ -29,7 +29,28 @@ export class TransactionManagerService {
   }
 
   public withdraw(accountId: string, amount: MoneyModel): TransactionModel {
-    throw new Error('Not implemented');
+    const account = AccountsRepository.get(accountId);
+
+    if(!account) {
+      throw new Error('Specified account does not exist');
+    }
+
+    if(account.balance.amount < amount.amount) {
+      throw new Error('Insufficient funds');
+    }
+
+    const transaction = new TransactionModel({
+      id: crypto.randomUUID(),
+      from: accountId,
+      to: accountId,
+      amount: amount,
+      timestamp: dayjs().toDate(),
+    });
+
+    account.balance.amount -= amount.amount;
+    account.transactions = [...account.transactions, transaction];
+
+    return transaction;
   }
 
   public checkFunds(accountId: string): MoneyModel {
