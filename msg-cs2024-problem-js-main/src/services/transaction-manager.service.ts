@@ -31,14 +31,17 @@ export class TransactionManagerService {
   public withdraw(accountId: string, amount: MoneyModel): TransactionModel {
     const account = AccountsRepository.get(accountId);
 
+    //verificam daca acest cont exista
     if(!account) {
       throw new Error('Specified account does not exist');
     }
 
+    //verificam daca suma de bani din conta este suficienta pentru a retrage abnii
     if(account.balance.amount < amount.amount) {
       throw new Error('Insufficient funds');
     }
 
+    //cream o tranzactie pentru retragerea banilor
     const transaction = new TransactionModel({
       id: crypto.randomUUID(),
       from: accountId,
@@ -47,9 +50,13 @@ export class TransactionManagerService {
       timestamp: dayjs().toDate(),
     });
 
+    //scadem suma de bani retrasa din cont
     account.balance.amount -= amount.amount;
+
+    //adaugam retragerea in lista de tranzactii a contului
     account.transactions = [...account.transactions, transaction];
 
+    //dam return la tranzactie care practic reprezinta retragerea efectuata
     return transaction;
   }
 
